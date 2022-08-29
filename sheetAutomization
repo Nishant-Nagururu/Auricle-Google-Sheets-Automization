@@ -1,0 +1,59 @@
+function nimMailOnUpdate(e) {
+  let index = 0;
+  const rData = e.source.getActiveSheet().getRange(e.range.rowStart,1,1,8).getValues();
+  let editor = rData[0][7];
+  var noEditor = false;
+  if(editor == "") {
+    noEditor = true;
+    index = 6;
+  } 
+  editor = cleanString(editor)
+  let doi = rData[0][4];
+  doi = cleanString(doi);
+  if(doi.substring(0,2) != "10") return;
+  let writer = rData[0][3];
+  let editors = [\\names deleted for privacy]
+  if(index == 0) {
+    for(index = 0; index < editors.length; index = index + 1) {
+      if(editors[index] == editor) break;
+    }
+  }
+  let emails = [\\emails deleted for privacy]
+  let msg = "";
+  if(noEditor){
+    if(checkIfThere(e,doi)){
+      msg = "Dear Nimesh,\n" + writer + " has submitted a  DOI: https://doi.org/" + doi + ". There is no editor so this is being sent to you. This doi has already been done according to the archives. Contact this writer and tell them.";
+      Logger.log(msg);
+    } 
+    else {
+      msg = "Dear Nimesh,\n "  + writer + " has submitted a new DOI: https://doi.org/" + doi + ". There is no editor so this is being sent to you. Go to sign up spreadsheet (https://docs.google.com/spreadsheets/d/12ePo2lIzw4pkwpcFOrG4UuJ7XZg7kR4VV3fSicC4wqg/edit?usp=sharing) and approve the article.";
+      Logger.log(msg);
+    }
+  } 
+  else{
+    if(checkIfThere(e,doi)){
+      msg = "Dear " + editors[index] + ",\n" + writer + " has submitted a  DOI: https://doi.org/" + doi + ". This doi has already been done according to the archives. Contact this writer and tell them. \nBest,\nNimesh";
+      Logger.log(msg);
+    } 
+    else {
+      msg = "Dear " + editors[index] + ",\n" + writer + " has submitted a new DOI: https://doi.org/" + doi + ". Go to sign up spreadsheet (https://docs.google.com/spreadsheets/d/12ePo2lIzw4pkwpcFOrG4UuJ7XZg7kR4VV3fSicC4wqg/edit?usp=sharing) and approve the article.\nBest,\nNimesh";
+      Logger.log(msg);
+    }
+  }
+  GmailApp.sendEmail(emails[index], "New Article to Check!", msg)
+}
+function cleanString (str) {
+  str = str.trim();
+  str = str.toLowerCase();
+  return str;
+}
+function checkIfThere(e,place){
+  var values = e.source.getSheetByName("Article Archives").getDataRange().getValues();
+  for(var i = 0; i < values.length; i = i + 1){
+    if(values[i][2] == place) {
+      return true;
+    }
+  }
+  return false;
+}
+
